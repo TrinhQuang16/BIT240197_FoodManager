@@ -40,6 +40,6 @@ yarn-error.*
 /ios
 /android
 
-# IDE
+# IDE & temporary notes
 .idea/
-
+README.md
