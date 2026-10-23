@@ -1,5 +1,12 @@
-import React, { useState } from 'react';
-import { View, Text, StyleSheet, TouchableOpacity } from 'react-native';
+import React, { useState, useEffect } from 'react';
+import {
+  View,
+  Text,
+  StyleSheet,
+  TouchableOpacity,
+  Platform,
+  useWindowDimensions,
+} from 'react-native';
 import { StatusBar } from 'expo-status-bar';
 import { SafeAreaProvider, SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
@@ -166,16 +173,176 @@ const MainNavigator: React.FC = () => {
 };
 
 export default function App() {
+  const { width, height } = useWindowDimensions();
+  const isWeb = Platform.OS === 'web';
+  const isLargeScreen = isWeb && width > 520;
+
+  // Real-time clock for simulated Android status bar
+  const [timeStr, setTimeStr] = useState('09:41');
+  useEffect(() => {
+    const updateTime = () => {
+      const d = new Date();
+      const h = String(d.getHours()).padStart(2, '0');
+      const m = String(d.getMinutes()).padStart(2, '0');
+      setTimeStr(`${h}:${m}`);
+    };
+    updateTime();
+    const timer = setInterval(updateTime, 30000);
+    return () => clearInterval(timer);
+  }, []);
+
   return (
     <SafeAreaProvider>
       <AppProvider>
-        <MainNavigator />
+        {isLargeScreen ? (
+          <View style={styles.webBackdrop}>
+            {/* Top Desktop Banner Info */}
+            <View style={styles.webHeader}>
+              <View style={styles.webHeaderLeft}>
+                <Ionicons name="phone-portrait" size={18} color="#38BDF8" />
+                <Text style={styles.webHeaderTitle}>Android Mobile Simulation Mode</Text>
+              </View>
+              <Text style={styles.webHeaderMSSV}>MSSV: BIT240197</Text>
+            </View>
+
+            {/* Android Device Mockup Frame */}
+            <View
+              style={[
+                styles.androidDeviceFrame,
+                { height: Math.min(height - 80, 890) },
+              ]}
+            >
+              {/* Simulated Android Status Bar (Camera notch, Clock, Battery) */}
+              <View style={styles.simulatedStatusBar}>
+                <Text style={styles.statusTime}>{timeStr}</Text>
+                <View style={styles.punchHoleCamera} />
+                <View style={styles.statusIcons}>
+                  <Ionicons name="wifi" size={13} color="#CBD5E1" />
+                  <Ionicons name="cellular" size={13} color="#CBD5E1" />
+                  <Ionicons name="battery-charging" size={14} color="#10B981" />
+                </View>
+              </View>
+
+              {/* Main Mobile Screen */}
+              <View style={styles.deviceScreenInner}>
+                <MainNavigator />
+              </View>
+
+              {/* Android Bottom Home Navigation Bar */}
+              <View style={styles.simulatedHomeBar}>
+                <View style={styles.homeIndicatorPill} />
+              </View>
+            </View>
+          </View>
+        ) : (
+          <MainNavigator />
+        )}
       </AppProvider>
     </SafeAreaProvider>
   );
 }
 
 const styles = StyleSheet.create({
+  // Web Container styles
+  webBackdrop: {
+    flex: 1,
+    backgroundColor: '#090D16',
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingVertical: 14,
+    paddingHorizontal: 12,
+  },
+  webHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    width: '100%',
+    maxWidth: 440,
+    marginBottom: 8,
+    paddingHorizontal: 8,
+  },
+  webHeaderLeft: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
+  },
+  webHeaderTitle: {
+    color: '#94A3B8',
+    fontSize: 12,
+    fontWeight: '600',
+    letterSpacing: 0.3,
+  },
+  webHeaderMSSV: {
+    color: '#38BDF8',
+    fontSize: 12,
+    fontWeight: '700',
+    backgroundColor: '#1E293B',
+    paddingHorizontal: 8,
+    paddingVertical: 3,
+    borderRadius: 6,
+  },
+  androidDeviceFrame: {
+    width: '100%',
+    maxWidth: 440,
+    backgroundColor: '#0F172A',
+    borderRadius: 38,
+    borderWidth: 4,
+    borderColor: '#334155',
+    overflow: 'hidden',
+    shadowColor: '#000000',
+    shadowOffset: { width: 0, height: 20 },
+    shadowOpacity: 0.65,
+    shadowRadius: 30,
+    elevation: 25,
+  },
+  simulatedStatusBar: {
+    height: 32,
+    backgroundColor: '#1E293B',
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    paddingHorizontal: 20,
+    borderTopLeftRadius: 34,
+    borderTopRightRadius: 34,
+  },
+  statusTime: {
+    color: '#F8FAFC',
+    fontSize: 11,
+    fontWeight: '700',
+  },
+  punchHoleCamera: {
+    width: 12,
+    height: 12,
+    borderRadius: 6,
+    backgroundColor: '#0B0F19',
+    borderWidth: 1.5,
+    borderColor: '#334155',
+  },
+  statusIcons: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
+  },
+  deviceScreenInner: {
+    flex: 1,
+    backgroundColor: '#F8FAFC',
+  },
+  simulatedHomeBar: {
+    height: 18,
+    backgroundColor: '#FFFFFF',
+    alignItems: 'center',
+    justifyContent: 'center',
+    borderBottomLeftRadius: 34,
+    borderBottomRightRadius: 34,
+  },
+  homeIndicatorPill: {
+    width: 90,
+    height: 4,
+    borderRadius: 2,
+    backgroundColor: '#0F172A',
+  },
+
+  // App native styles
   safeArea: {
     flex: 1,
     backgroundColor: '#1E293B',
